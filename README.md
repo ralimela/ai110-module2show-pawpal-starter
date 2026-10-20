@@ -42,17 +42,40 @@ pip install -r requirements.txt
 6. Connect your logic to the Streamlit UI in `app.py`.
 7. Refine UML so it matches what you actually built.
 
+## 🛠️ Implementation Summary
+
+All backend logic lives in `pawpal_system.py`, built from four classes:
+
+- **`Task`** (dataclass): one care activity with a title, category, duration, priority (High/Medium/Low), frequency (Once/Daily/Weekly), due date, and optional start time. It tracks completion per date, so finishing Monday's daily walk doesn't mark Tuesday's done, and `occurs_on(day)` decides whether it happens on a given day.
+- **`Pet`** (dataclass): a pet's name, species, and age plus its list of tasks. It adds, removes, and reschedules its own tasks; moving one occurrence of a recurring task skips that date and adds a one-time copy on the new date.
+- **`Owner`** (dataclass): the user and their pets. `get_all_tasks()` gathers every pet's tasks into one list.
+- **`Scheduler`**: the "brain." It reads from `Owner.get_all_tasks()` so it covers all pets, then builds the sorted daily list, a 7-day calendar, the day's total minutes, overlap warnings for fixed-time tasks, and filters by pet or completion status.
+
+`main.py` is a CLI demo that builds a sample owner with two pets and prints today's schedule. `tests/test_pawpal.py` holds the pytest suite.
+
 ## 🖥️ Sample Output
 
-Paste a sample of your app's CLI or Streamlit output here so a reader can see what a generated plan looks like:
+Output from running `python main.py`, which creates an owner with two pets and six tasks, then prints today's schedule:
 
 ```
-# e.g.:
-# Daily plan for Biscuit (Golden Retriever):
-#   08:00 — Morning walk (30 min) [priority: high]
-#   09:00 — Feeding (10 min) [priority: high]
-#   ...
+Today's Schedule for Jordan - Tuesday, October 20, 2026
+==============================================================
+      Time      Task                 Pet       Length  Priority
+--------------------------------------------------------------
+  [x] 07:30 AM  Morning walk         Rex       30 min  High
+  [ ] 08:15 AM  Breakfast            Rex       10 min  High
+  [ ] 02:30 PM  Flea medicine        Mia        5 min  High
+  [ ] 02:00 PM  Vet checkup          Mia       60 min  Medium
+  [ ] Anytime   Play time            Mia       20 min  Medium
+  [ ] Anytime   Brush coat           Rex       15 min  Low
+--------------------------------------------------------------
+  Total time: 140 min
+
+  Time conflicts:
+    ! Flea medicine (Mia) overlaps Vet checkup (Mia)
 ```
+
+Tasks are sorted High > Medium > Low; within a priority, fixed-time tasks come first in time order. `[x]` marks a task already completed today.
 
 ## 🧪 Testing PawPal+
 

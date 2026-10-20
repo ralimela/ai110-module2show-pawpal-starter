@@ -63,10 +63,20 @@ The review also checked performance. The weekly calendar runs the daily lookup 7
 - How did you use AI tools during this project (for example: design brainstorming, debugging, refactoring)?
 - What kinds of prompts or questions were most helpful?
 
+I used my AI coding assistant in each step: brainstorming the four classes and turning them into a Mermaid UML diagram, generating the dataclass skeleton, reviewing that skeleton for missing relationships and logic bottlenecks, filling in the method logic, writing the `main.py` demo with a readable table, drafting the first pytest tests, and adding docstrings.
+
+The most helpful prompts were review questions about my own code, like "Attach pawpal_system.py: do you notice any missing relationships or potential logic bottlenecks?" Those found real design bugs (listed in 1b), such as a single `completed` flag marking a daily task done for every day. Specific requests also worked well, like asking for "a clearer, more readable way to format this schedule output for the terminal."
+
 **b. Judgment and verification**
 
 - Describe one moment where you did not accept an AI suggestion as-is.
 - How did you evaluate or verify what the AI suggested?
+
+**What AI suggested and what I accepted:** I accepted the six skeleton-review changes in 1b because each one fixed a concrete problem I could explain myself, like a `date` field shadowing Python's `date` type, or titles not being unique after a reschedule.
+
+**What I did not accept as-is:** The review pointed out that the weekly calendar repeats the daily lookup 7 times and conflict detection compares every pair of tasks, which could be optimized. I kept the simple versions because one household only has a handful of pet tasks, and simpler code is easier to read and test. The AI also noted that my daily list sorts by priority first, so a 2:30 PM High task prints before a 2:00 PM Medium task. I kept priority-first ordering on purpose, because the owner should see the most important tasks at the top.
+
+**How I verified it:** I ran `main.py` and checked the printed schedule by hand: two pets' tasks combined, sorted High > Medium > Low, the total of 140 minutes, and the vet/flea-medicine overlap flagged. I also ran `python -m pytest` and both tests passed (marking a task complete changes its status; adding a task increases the pet's task count).
 
 ---
 

@@ -118,6 +118,7 @@ class Scheduler:
     """Organizes an owner's tasks into daily lists and weekly calendars."""
 
     def __init__(self, owner: Owner):
+        """Create a scheduler that reads tasks from every pet of this owner."""
         self.owner = owner
 
     def get_daily_tasks(self, day: date) -> list[Task]:
@@ -142,6 +143,7 @@ class Scheduler:
     def detect_conflicts(self, day: date) -> list[tuple[Task, Task]]:
         """Return pairs of fixed-time tasks on day whose times overlap."""
         def minutes(t: time) -> int:
+            """Convert a time of day to minutes since midnight."""
             return t.hour * 60 + t.minute
 
         timed = [t for t in self.get_daily_tasks(day) if t.start_time is not None]
