@@ -17,6 +17,7 @@ classDiagram
         +add_task(task: Task) None
         +remove_task(task: Task) None
         +get_tasks() List~Task~
+        +complete_task(task: Task, day: date) Task
         +reschedule_task(task: Task, from_date: date, new_date: date) None
     }
 
@@ -29,9 +30,10 @@ classDiagram
         +str frequency
         +time start_time
         +str pet_name
-        +List~date~ completed_dates
+        +bool completed
         +List~date~ skipped_dates
-        +mark_complete(day: date) None
+        +mark_complete() Task
+        +next_occurrence() Task
         +is_completed_on(day: date) bool
         +priority_rank() int
         +occurs_on(day: date) bool
@@ -39,13 +41,17 @@ classDiagram
 
     class Scheduler {
         +Owner owner
+        +sort_by_time(tasks: List~Task~)$ List~Task~
         +get_daily_tasks(day: date) List~Task~
         +get_weekly_calendar(start_day: date) dict
         +total_duration(day: date) int
-        +detect_conflicts(day: date) List~tuple~
         +filter_tasks(day: date, pet_name: str, completed: bool) List~Task~
+        +mark_task_complete(task: Task, day: date) Task
+        +detect_conflicts(day: date) List~tuple~
+        +get_conflict_warnings(day: date) List~str~
     }
 
     Owner "1" o-- "*" Pet : has
     Pet "1" *-- "*" Task : has
     Scheduler --> Owner : uses
+    Task ..> Task : next_occurrence creates

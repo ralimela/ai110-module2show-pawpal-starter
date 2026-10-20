@@ -1,4 +1,4 @@
-"""Demo script: build a sample owner with two pets and print today's schedule."""
+"""Demo script: build a sample owner with two pets and exercise the scheduler in the terminal."""
 
 from datetime import date, time
 
@@ -13,25 +13,19 @@ def format_task(task: Task, day: date) -> str:
             f"{task.duration_minutes:>3} min  {task.priority}")
 
 
-def print_schedule(scheduler: Scheduler, day: date) -> None:
-    """Print the day's tasks, total time, and any time conflicts."""
-    print(f"Today's Schedule for {scheduler.owner.name} - {day:%A, %B %d, %Y}")
-    print("=" * 62)
+def print_tasks(heading: str, tasks: list[Task], day: date) -> None:
+    """Print a heading, a column header, and one line per task."""
+    print(f"\n{heading}")
+    print("-" * 62)
     print(f"      {'Time':<9} {'Task':<20} {'Pet':<8} {'Length':>7}  Priority")
-    print("-" * 62)
-    for task in scheduler.get_daily_tasks(day):
+    for task in tasks:
         print(format_task(task, day))
-    print("-" * 62)
-    print(f"  Total time: {scheduler.total_duration(day)} min")
-
-    conflicts = scheduler.detect_conflicts(day)
-    if conflicts:
-        print("\n  Time conflicts:")
-        for a, b in conflicts:
-            print(f"    ! {a.title} ({a.pet_name}) overlaps {b.title} ({b.pet_name})")
+    if not tasks:
+        print("  (no tasks)")
 
 
 def main() -> None:
+    """Build sample data and print the schedule, sorting, filtering, recurrence, and conflicts."""
     today = date.today()
 
     owner = Owner("Jordan")
@@ -40,16 +34,47 @@ def main() -> None:
     owner.add_pet(rex)
     owner.add_pet(mia)
 
-    rex.add_task(Task("Morning walk", "walk", 30, "High", today, "Daily", start_time=time(7, 30)))
-    rex.add_task(Task("Breakfast", "feeding", 10, "High", today, "Daily", start_time=time(8, 15)))
-    rex.add_task(Task("Brush coat", "grooming", 15, "Low", today))
+    # Added out of time order on purpose so sort_by_time() has work to do.
     mia.add_task(Task("Vet checkup", "appointment", 60, "Medium", today, start_time=time(14, 0)))
+    rex.add_task(Task("Evening walk", "walk", 30, "Medium", today, "Daily", start_time=time(18, 0)))
+    rex.add_task(Task("Brush coat", "grooming", 15, "Low", today))
     mia.add_task(Task("Flea medicine", "meds", 5, "High", today, "Weekly", start_time=time(14, 30)))
+    rex.add_task(Task("Breakfast", "feeding", 10, "High", today, "Daily", start_time=time(8, 0)))
     mia.add_task(Task("Play time", "other", 20, "Medium", today, "Daily"))
+    rex.add_task(Task("Morning walk", "walk", 30, "High", today, "Daily", start_time=time(7, 30)))
+    mia.add_task(Task("Breakfast", "feeding", 5, "High", today, "Daily", start_time=time(8, 0)))
 
-    rex.tasks[0].mark_complete(today)  # the morning walk is already done
+    scheduler = Scheduler(owner)
 
-    print_schedule(Scheduler(owner), today)
+    print(f"PawPal+ for {owner.name} - {today:%A, %B %d, %Y}")
+    print("=" * 62)
+
+    print_tasks("Today's Schedule (by priority)", scheduler.get_daily_tasks(today), today)
+    print(f"  Total time: {scheduler.total_duration(today)} min")
+
+    print_tasks("Sorted by time - Scheduler.sort_by_time()",
+                scheduler.sort_by_time(scheduler.get_daily_tasks(today)), today)
+
+    print_tasks("Only Mia's tasks - filter_tasks(pet_name='Mia')",
+                scheduler.filter_tasks(today, pet_name="Mia"), today)
+
+    # Recurring task: completing today's Daily walk creates tomorrow's walk.
+    walk = next(t for t in rex.tasks if t.title == "Morning walk")
+    next_walk = scheduler.mark_task_complete(walk, today)
+    print("\nRecurring tasks - Scheduler.mark_task_complete()")
+    print("-" * 62)
+    print(f"  Completed '{walk.title}' ({walk.frequency}) for {today:%b %d}.")
+    print(f"  Next occurrence created: '{next_walk.title}' due {next_walk.due_date:%A, %b %d}.")
+
+    print_tasks("Done today - filter_tasks(completed=True)",
+                scheduler.filter_tasks(today, completed=True), today)
+    print_tasks("Still to do - filter_tasks(completed=False)",
+                scheduler.filter_tasks(today, completed=False), today)
+
+    print("\nConflicts - Scheduler.get_conflict_warnings()")
+    print("-" * 62)
+    for warning in scheduler.get_conflict_warnings(today) or ["  No conflicts."]:
+        print(f"  {warning}")
 
 
 if __name__ == "__main__":

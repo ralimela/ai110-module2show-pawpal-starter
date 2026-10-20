@@ -38,6 +38,8 @@ After writing the skeleton, I asked my AI assistant to review pawpal_system.py f
 5. Added pet_name to Task. Owner.get_all_tasks() returns one combined list, so the daily list couldn't show which pet a task belongs to. Pet.add_task now sets it.
 6. Added validation for priority and frequency (the PRIORITIES and FREQUENCIES lists, checked in __post_init__). A typo like "high" instead of "High" would otherwise sort wrong without any error.
 
+7. Later, in Phase 4, I replaced completed_dates with a simple completed flag plus "next occurrence" tasks. Now, when a Daily or Weekly task is marked complete, Task.mark_complete() returns a new copy due one interval later (using timedelta), and Pet.complete_task() adds it to the pet. Each Task object is one occurrence, which makes "done" and "not done" easy to filter and matches how an owner thinks about it: today's walk is finished, and tomorrow's is a new to-do.
+
 The review also checked performance. The weekly calendar runs the daily lookup 7 times, and conflict detection compares tasks in pairs. Both are fine at the size of a household's pet tasks, so I kept them simple.
 
 ---
@@ -53,6 +55,12 @@ The review also checked performance. The weekly calendar runs the daily lookup 7
 
 - Describe one tradeoff your scheduler makes.
 - Why is that tradeoff reasonable for this scenario?
+
+**Tradeoff: conflict detection only checks tasks with a fixed start time.** The scheduler compares every pair of timed tasks on a day and flags exact same-time starts and overlapping durations (for example, a 2:00 PM vet visit that lasts 60 minutes overlaps 2:30 PM flea medicine). "Anytime" tasks like brushing or play time are never flagged, and the scheduler doesn't try to place them into free slots or warn when the day's total minutes are too many.
+
+This is reasonable for a pet owner because the tasks that truly can't move, like appointments and medication times, are the ones with fixed times. Flexible tasks can be squeezed in whenever the owner has a free moment, and automatically assigning them times would make the app guess at the owner's day. The owner still sees the total minutes for the day and can decide what fits.
+
+**Readability vs. cleverness:** I asked my AI assistant how `detect_conflicts` could be simplified or made faster. It suggested a "sweep line": sort tasks by start time and only compare each task with the ones still running. That's faster for very large lists, but it's harder to read and easier to get wrong. A household has maybe 5 to 15 timed tasks a day, so checking every pair with `itertools.combinations` is instant. I kept the pairwise version because anyone can read it and see that it is correct. I did accept one simplification for sorting: `get_daily_tasks` now sorts by time with `sort_by_time()` and then by priority. Python's sort is stable, so that one line replaces a three-part sort key and reuses the new method.
 
 ---
 
