@@ -73,8 +73,11 @@ def main() -> None:
 
     print("\nConflicts - Scheduler.get_conflict_warnings()")
     print("-" * 62)
-    for warning in scheduler.get_conflict_warnings(today) or ["  No conflicts."]:
-        print(f"  {warning}")
+    warnings = scheduler.get_conflict_warnings(today)
+    for warning in warnings:
+        print(f"  WARNING: {warning}")
+    if not warnings:
+        print("  No conflicts.")
 
 
 if __name__ == "__main__":

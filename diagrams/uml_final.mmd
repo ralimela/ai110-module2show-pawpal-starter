@@ -1,0 +1,62 @@
+classDiagram
+    %% PawPal+ final class diagram (matches pawpal_system.py)
+
+    class Owner {
+        <<dataclass>>
+        +str name
+        +List~Pet~ pets
+        +add_pet(pet: Pet) None
+        +get_all_tasks() List~Task~
+    }
+
+    class Pet {
+        <<dataclass>>
+        +str name
+        +str species
+        +int age
+        +List~Task~ tasks
+        +add_task(task: Task) None
+        +remove_task(task: Task) None
+        +get_tasks() List~Task~
+        +complete_task(task: Task, day: date) Task
+        +reschedule_task(task: Task, from_date: date, new_date: date) None
+        -_check_occurrence(task: Task, day: date) None
+        -_split_off(task: Task, day: date, new_date: date) Task
+    }
+
+    class Task {
+        <<dataclass>>
+        +str title
+        +str category
+        +int duration_minutes
+        +str priority
+        +date due_date
+        +str frequency
+        +time start_time
+        +str pet_name
+        +bool completed
+        +List~date~ skipped_dates
+        +mark_complete() Task
+        +next_occurrence() Task
+        +is_completed_on(day: date) bool
+        +priority_rank() int
+        +occurs_on(day: date) bool
+    }
+
+    class Scheduler {
+        +Owner owner
+        +sort_by_time(tasks: List~Task~)$ List~Task~
+        +get_daily_tasks(day: date) List~Task~
+        +get_weekly_calendar(start_day: date) dict
+        +total_duration(day: date) int
+        +filter_tasks(day: date, pet_name: str, completed: bool) List~Task~
+        +mark_task_complete(task: Task, day: date) Task
+        +detect_conflicts(day: date) List~tuple~
+        +get_conflict_warnings(day: date) List~str~
+    }
+
+    Owner "1" o-- "*" Pet : has
+    Pet "1" *-- "*" Task : has
+    Scheduler --> Owner : reads all tasks via get_all_tasks
+    Scheduler ..> Pet : completes tasks via complete_task
+    Task ..> Task : next_occurrence creates

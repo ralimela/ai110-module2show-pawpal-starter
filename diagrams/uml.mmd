@@ -1,8 +1,8 @@
 classDiagram
-    %% PawPal+ class diagram
-    %% Keep this file updated so it matches your final implementation.
+    %% PawPal+ class diagram (same as uml_final.mmd)
 
     class Owner {
+        <<dataclass>>
         +str name
         +List~Pet~ pets
         +add_pet(pet: Pet) None
@@ -10,6 +10,7 @@ classDiagram
     }
 
     class Pet {
+        <<dataclass>>
         +str name
         +str species
         +int age
@@ -19,9 +20,12 @@ classDiagram
         +get_tasks() List~Task~
         +complete_task(task: Task, day: date) Task
         +reschedule_task(task: Task, from_date: date, new_date: date) None
+        -_check_occurrence(task: Task, day: date) None
+        -_split_off(task: Task, day: date, new_date: date) Task
     }
 
     class Task {
+        <<dataclass>>
         +str title
         +str category
         +int duration_minutes
@@ -53,5 +57,6 @@ classDiagram
 
     Owner "1" o-- "*" Pet : has
     Pet "1" *-- "*" Task : has
-    Scheduler --> Owner : uses
+    Scheduler --> Owner : reads all tasks via get_all_tasks
+    Scheduler ..> Pet : completes tasks via complete_task
     Task ..> Task : next_occurrence creates

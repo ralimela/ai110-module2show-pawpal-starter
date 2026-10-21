@@ -218,9 +218,9 @@ class Scheduler:
         warnings = []
         for a, b in self.detect_conflicts(day):
             if a.start_time == b.start_time:
-                warnings.append(f"WARNING: {a.title} ({a.pet_name}) and {b.title} ({b.pet_name}) "
+                warnings.append(f"{a.title} ({a.pet_name}) and {b.title} ({b.pet_name}) "
                                 f"are both at the same time, {a.start_time:%I:%M %p}")
             else:
-                warnings.append(f"WARNING: {a.title} ({a.pet_name}, {a.start_time:%I:%M %p}, "
+                warnings.append(f"{a.title} ({a.pet_name}, {a.start_time:%I:%M %p}, "
                                 f"{a.duration_minutes} min) overlaps {b.title} ({b.pet_name}, {b.start_time:%I:%M %p})")
         return warnings
