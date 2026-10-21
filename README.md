@@ -125,19 +125,37 @@ The main schedule is sorted High > Medium > Low; within a priority, fixed-time t
 
 ## 🧪 Testing PawPal+
 
+Run the full test suite from the project folder (with the virtual environment active):
+
 ```bash
-# Run the full test suite:
-pytest
-
-# Run with coverage:
-pytest --cov
+python -m pytest
 ```
 
-Sample test output:
+The 24 tests in `tests/test_pawpal.py` cover:
+
+- **Sorting:** `sort_by_time()` returns tasks in clock order with "Anytime" tasks last, keeps same-time tasks in their original order, and doesn't modify the input list. The daily list is High > Medium > Low, with time order inside each priority.
+- **Filtering:** `filter_tasks()` by pet name, by done/not-done status, and by both together.
+- **Recurring tasks:** completing a Daily task creates a new task for the next day, Weekly creates one 7 days later, and Once creates none. Completing the same task twice doesn't create duplicates, a chain of daily completions shows exactly one walk per day, and a task never appears before its due date.
+- **Conflict detection:** flags tasks at the exact same time (including tasks for different pets), and doesn't flag tasks that only touch end to end, "Anytime" tasks, or tasks on other days.
+- **Edge cases and validation:** an owner with no pets or a pet with no tasks gives an empty schedule. Completing a task on a day it doesn't occur, or one that belongs to no pet, raises `ValueError`, and so do invalid priority, frequency, or duration values. Rescheduling one occurrence of a daily task moves only that day.
+
+Successful test run:
 
 ```
-# Paste your pytest output here
+============================= test session starts =============================
+platform win32 -- Python 3.14.3, pytest-9.1.1, pluggy-1.7.0
+rootdir: E:\Codepath\ai110-module2show-pawpal-starter
+plugins: anyio-4.15.1
+collected 24 items
+
+tests\test_pawpal.py ........................                            [100%]
+
+============================= 24 passed in 0.06s ==============================
 ```
+
+**Confidence Level: ★★★★☆ (4/5)**
+
+All 24 tests pass, covering every scheduling feature plus its main edge cases (empty data, same-time tasks, duplicate completions, invalid input). It isn't 5 stars because the Streamlit UI is only checked by hand, and some situations aren't tested yet: tasks that run past midnight, very long task lists, and overdue recurring tasks that were never completed.
 
 ## 📐 Smarter Scheduling
 
