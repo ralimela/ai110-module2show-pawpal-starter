@@ -32,11 +32,11 @@ st.caption("Plan your pets' daily care: feedings, walks, meds, and appointments.
 # Streamlit reruns this script on every click, so keep the Owner in session_state.
 # Only create it the first time; after that, reuse the same object.
 if "owner" not in st.session_state:
-    st.session_state.owner = Owner("Jordan")
+    st.session_state.owner = Owner("")
 owner: Owner = st.session_state.owner
 scheduler = Scheduler(owner)
 
-owner.name = st.text_input("Owner name", value=owner.name)
+owner.name = st.text_input("Owner name", value=owner.name, placeholder="Enter Your Name Here")
 
 # Show a message saved before st.rerun() (e.g. after marking a task done).
 if "flash" in st.session_state:
